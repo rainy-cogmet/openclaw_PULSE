@@ -1,4 +1,4 @@
-# OpenClaw PARTS Spectrum Profiler
+# OpenClaw PULSE Spectrum Profiler
 
 ## 概述
 
