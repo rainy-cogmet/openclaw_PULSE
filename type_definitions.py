@@ -331,14 +331,14 @@ ECHO_DIM_LABELS = {
     'I': {'R': 'Reactive（被动响应）', 'P': 'Proactive（主动出击）'},
     'S': {'S': 'Specialist（专精深耕）', 'G': 'Generalist（通才广域）'},
     'T': {'F': 'Functional（功能优先）', 'E': 'Empathetic（共情优先）'},
-    'M': {'F': 'Transient（瞬时交互）', 'C': 'Continuous（持续记忆）'},
+    'M': {'T': 'Transient（瞬时交互）', 'C': 'Continuous（持续记忆）'},
 }
 
 
 # ============================================================================
-# SYNC Spectrum — 10 种人机关系
+# PARTS Spectrum — 10 种人机关系
 # ============================================================================
-# 通过 RTAPS 五维评分（Resonance, Tempo, Agency, Precision, Synergy）聚类
+# 通过 PARTS 五维评分（Resonance, Tempo, Agency, Precision, Synergy）聚类
 
 SYNC_TYPES = {
     # ━━━━━━━━━━━━━━━━━━━━━━  高共鸣区  ━━━━━━━━━━━━━━━━━━━━━━
@@ -357,7 +357,7 @@ SYNC_TYPES = {
             "深度共鸣", "情感同频", "心照不宣", "价值观契合",
             "默契", "灵魂搭档", "自然流畅", "高同步",
         ],
-        "rtaps_tendency": "R↑↑ T↑ S↑↑ — 共鸣与同步最高，任务精度适中",
+        "parts_tendency": "R↑↑ T↑ S↑↑ — 共鸣与同步最高，任务精度适中",
     },
 
     "Confidant": {
@@ -374,7 +374,7 @@ SYNC_TYPES = {
             "倾诉", "私密", "共情", "陪伴", "信任",
             "情感支持", "安全感", "温暖回应",
         ],
-        "rtaps_tendency": "R↑ T~ P↓ — 高共鸣但精度需求低，节奏更慢更私密",
+        "parts_tendency": "R↑ T~ P↓ — 高共鸣但精度需求低，节奏更慢更私密",
     },
 
     # ━━━━━━━━━━━━━━━━━━━━━━  高协作区  ━━━━━━━━━━━━━━━━━━━━━━
@@ -393,7 +393,7 @@ SYNC_TYPES = {
             "并肩", "双向协作", "共同决策", "轮流主导",
             "互补", "高精度", "任务驱动", "伙伴",
         ],
-        "rtaps_tendency": "T↑ P↑ S↑ A~ — 节奏紧密、精度高、Agency 均衡",
+        "parts_tendency": "T↑ P↑ S↑ A~ — 节奏紧密、精度高、Agency 均衡",
     },
 
     "Trusted Advisor": {
@@ -410,7 +410,7 @@ SYNC_TYPES = {
             "专业", "权威", "建议", "信赖", "方案",
             "分析", "结构化", "决策支持",
         ],
-        "rtaps_tendency": "P↑↑ A↑ T↑ — 精度最高，Agent 主导提供专业意见",
+        "parts_tendency": "P↑↑ A↑ T↑ — 精度最高，Agent 主导提供专业意见",
     },
 
     "Commander & Lieutenant": {
@@ -427,7 +427,7 @@ SYNC_TYPES = {
             "指令", "执行", "服从", "效率", "纪律",
             "批量处理", "链路清晰", "高 Agency",
         ],
-        "rtaps_tendency": "A↑↑ P↑ T↑ — 强主导权分配，精度高，节奏紧",
+        "parts_tendency": "A↑↑ P↑ T↑ — 强主导权分配，精度高，节奏紧",
     },
 
     # ━━━━━━━━━━━━━━━━━━━━━━  中间张力区  ━━━━━━━━━━━━━━━━━━━━━
@@ -446,7 +446,7 @@ SYNC_TYPES = {
             "博弈", "辩论", "挑战", "反论", "对等",
             "碰撞", "深度思考", "势均力敌",
         ],
-        "rtaps_tendency": "R~ T~ A↓ P~ — 各维度居中，对等张力",
+        "parts_tendency": "R~ T~ A↓ P~ — 各维度居中，对等张力",
     },
 
     "Guardian": {
@@ -463,7 +463,7 @@ SYNC_TYPES = {
             "保护", "安全", "兜底", "自动", "风险检测",
             "主动介入", "过滤", "后台守护",
         ],
-        "rtaps_tendency": "A↑↑ P↑↑ R↓ — 强 Agent 主导，高精度保护，低情感连接",
+        "parts_tendency": "A↑↑ P↑↑ R↓ — 强 Agent 主导，高精度保护，低情感连接",
     },
 
     "Expedition Partner": {
@@ -480,7 +480,7 @@ SYNC_TYPES = {
             "探索", "好奇", "发散", "试错", "发现",
             "开放", "未知领域", "创意碰撞",
         ],
-        "rtaps_tendency": "R↑ S~ A↓ P↓ — 中等共鸣，低结构，享受过程",
+        "parts_tendency": "R↑ S~ A↓ P↓ — 中等共鸣，低结构，享受过程",
     },
 
     # ━━━━━━━━━━━━━━━━━━━━━━  低能量区  ━━━━━━━━━━━━━━━━━━━━━━
@@ -499,7 +499,7 @@ SYNC_TYPES = {
             "浅层", "一次性", "偶然", "短暂", "低投入",
             "尚未建立", "陌生", "试探",
         ],
-        "rtaps_tendency": "R↓ T↓ A↓ P↓ S↓ — 全维度低，关系尚未形成",
+        "parts_tendency": "R↓ T↓ A↓ P↓ S↓ — 全维度低，关系尚未形成",
     },
 
     "Hidden Reef": {
@@ -517,7 +517,7 @@ SYNC_TYPES = {
             "摩擦", "不匹配", "纠正", "重试", "差一点",
             "失调", "隐性问题", "需调整",
         ],
-        "rtaps_tendency": "P↓↓ S↓ R~ — 精度最差，同步低，有共鸣但转化不了",
+        "parts_tendency": "P↓↓ S↓ R~ — 精度最差，同步低，有共鸣但转化不了",
     },
 }
 
@@ -531,5 +531,21 @@ def get_echo_type(code: str) -> dict:
     return ECHO_TYPES.get(code.upper(), None)
 
 def get_sync_type(name: str) -> dict:
-    """根据关系类型名获取SYNC信息"""
-    return SYNC_TYPES.get(name, None)
+    """根据关系类型名获取SYNC信息.
+
+    自动补充兼容字段:
+      name  ← cn_name (供 card_generator / sync_matcher 使用)
+      desc  ← description (供 sync_matcher._build_type_info 使用)
+    """
+    raw = SYNC_TYPES.get(name, None)
+    if raw is None:
+        return None
+    # 构建兼容副本, 不修改原始数据
+    result = dict(raw)
+    if "name" not in result and "cn_name" in result:
+        result["name"] = result["cn_name"]
+    if "desc" not in result and "description" in result:
+        result["desc"] = result["description"]
+    if "desc" not in result and "short_desc" in result:
+        result["desc"] = result["short_desc"]
+    return result

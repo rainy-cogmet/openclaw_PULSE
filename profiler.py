@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-OpenClaw SYNC Spectrum Profiler — CLI 入口
+OpenClaw PARTS Spectrum Profiler — CLI 入口
 ==========================================
 v3.1: 原生兼容 OpenClaw 标准 session JSON 格式
 
@@ -55,9 +55,8 @@ try:
     )
     from .bond_classifier import compute_bond_profile
     from .echo_classifier import compute_echo_profile
-    from .sync_matcher import run_sync_spectrum
+    from .sync_matcher import run_parts_spectrum
     from .card_generator import generate_markdown_report
-    from .image_generator import generate_all_charts
     from .mock_scenarios import get_all_scenarios
     from .feature_extractor import FeatureExtractor
     from .data_parser import DataParser
@@ -71,9 +70,8 @@ except ImportError:
     )
     from bond_classifier import compute_bond_profile
     from echo_classifier import compute_echo_profile
-    from sync_matcher import run_sync_spectrum
+    from sync_matcher import run_parts_spectrum
     from card_generator import generate_markdown_report
-    from image_generator import generate_all_charts
     from mock_scenarios import get_all_scenarios
     from feature_extractor import FeatureExtractor
     from data_parser import DataParser
@@ -221,7 +219,7 @@ def run_profile(data):
     返回 dict:
         bond:       BOND Profile 结果
         echo:       ECHO Matrix 结果
-        sync:       SYNC Spectrum 结果
+        sync:       PARTS Spectrum 结果
         report_md:  完整 Markdown 报告
         warnings:   验证警告列表
     """
@@ -271,22 +269,36 @@ def run_profile(data):
     # 6. 三层分类
     bond_result = compute_bond_profile(bond_features)
     echo_result = compute_echo_profile(echo_features)
-    sync_result = run_sync_spectrum(bond_result, echo_result)
+    sync_result = run_parts_spectrum(bond_result, echo_result)
 
-    # 7. 生成本地图表
-    chart_dir = data.get("chart_dir", "charts")
-    local_images = generate_all_charts(bond_result, echo_result, sync_result, chart_dir)
+    # 7. 生成本地图表 (chart_dir=None 时跳过)
+    chart_dir = data.get("chart_dir")
+    local_images = {}
+    relative_images = {}
 
-    # 转换为相对路径 (假设 chart_dir 是报告所在目录的子目录)
-    chart_dir_name = os.path.basename(os.path.normpath(chart_dir))
-    relative_images = {
-        k: os.path.join(chart_dir_name, os.path.basename(v)) 
-        for k, v in local_images.items()
-    }
+    if chart_dir:
+        try:
+            try:
+                from .image_generator import generate_all_charts
+            except ImportError:
+                from image_generator import generate_all_charts
+            local_images = generate_all_charts(
+                bond_result, echo_result, sync_result, chart_dir)
+            # 转换为相对路径 (假设 chart_dir 是报告所在目录的子目录)
+            chart_dir_name = os.path.basename(os.path.normpath(chart_dir))
+            relative_images = {
+                k: os.path.join(chart_dir_name, os.path.basename(v))
+                for k, v in local_images.items()
+            }
+        except Exception as e:
+            print("⚠ 图表生成失败 (matplotlib 未安装?): {}".format(e),
+                  file=sys.stderr)
+            warnings.append("⚠ 图表生成失败: {}".format(e))
 
     # 8. 生成完整报告
     report_md = generate_markdown_report(
-        bond_result, echo_result, sync_result, user_name, agent_name, local_images=relative_images
+        bond_result, echo_result, sync_result, user_name, agent_name,
+        local_images=relative_images if relative_images else None,
     )
 
     return {
@@ -345,9 +357,21 @@ def load_from_dir(dirpath):
                 data[key] = f.read()
 
     # 解析 session 文件
+    # 按优先级查找 sessions 目录:
+    #   1. dirpath/sessions/
+    #   2. dirpath/.openclaw/sessions/
+    #   3. dirpath/.openclaw/agents/*/sessions/  (OpenClaw 标准路径)
     sessions_dir = os.path.join(dirpath, "sessions")
     if not os.path.isdir(sessions_dir):
         sessions_dir = os.path.join(dirpath, ".openclaw", "sessions")
+        if not os.path.isdir(sessions_dir):
+            agents_base = os.path.join(dirpath, ".openclaw", "agents")
+            if os.path.isdir(agents_base):
+                for agent_name in sorted(os.listdir(agents_base)):
+                    candidate = os.path.join(agents_base, agent_name, "sessions")
+                    if os.path.isdir(candidate):
+                        sessions_dir = candidate
+                        break
 
     user_messages = []
     agent_messages = []
@@ -496,7 +520,7 @@ def _print_summary(result):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="OpenClaw SYNC Spectrum Profiler v3.1",
+        description="OpenClaw PARTS Spectrum Profiler v3.1",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "examples:\n"
@@ -594,6 +618,9 @@ def main():
             print("错误: 文件不存在 '{}'".format(args.bundle))
             sys.exit(1)
         data = load_from_bundle(args.bundle)
+        # 如果 load_from_bundle 返回 list (session数组), 包装为 dict
+        if isinstance(data, list):
+            data = {"sessions": data}
         if not args.no_charts:
              data["chart_dir"] = os.path.join(args.outdir, "charts")
         result = run_profile(data)
@@ -617,6 +644,9 @@ def main():
     # ---- --stdin ----
     elif args.stdin:
         data = load_from_stdin()
+        # 如果输入是 list (session数组), 包装为 dict
+        if isinstance(data, list):
+            data = {"sessions": data}
         if not args.no_charts:
              data["chart_dir"] = os.path.join(args.outdir, "charts")
         result = run_profile(data)

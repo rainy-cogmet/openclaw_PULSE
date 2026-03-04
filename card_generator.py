@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-OpenClaw SYNC Spectrum Profiler — Markdown 报告生成器（支持图片）
+OpenClaw PARTS Spectrum Profiler — Markdown 报告生成器（支持图片）
 
 从 type_definitions 获取权威类型名称和描述，
 将 BOND / ECHO / SYNC 三层分类结果渲染为美观的 Markdown 测评报告。
@@ -124,8 +124,8 @@ def _normalize_echo(raw: Dict) -> Dict:
 
 
 def _normalize_sync(raw: Dict) -> Dict:
-    """将旧版 run_sync_spectrum() 输出转换为 classify() 格式."""
-    if "primary" in raw and "rtaps" in raw:
+    """将旧版 run_parts_spectrum() 输出转换为 classify() 格式."""
+    if "primary" in raw and "parts" in raw:
         # 可能已经是新格式, 但 primary_type 也可能存在
         result = dict(raw)
         if "primary" not in raw and "primary_type" in raw:
@@ -231,8 +231,8 @@ ECHO_DIM_META = {
     },
 }
 
-# RTAPS 五维含义
-RTAPS_META = {
+# PARTS 五维含义
+PARTS_META = {
     "R": {"full": "共振度", "desc": "情感温度与沟通语境的契合"},
     "T": {"full": "节奏感", "desc": "交互节奏与时间投入偏好的匹配"},
     "A": {"full": "主导权", "desc": "人与 Agent 控制权分配是否清晰舒适"},
@@ -489,13 +489,13 @@ def _render_echo_section(echo_result: Dict, local_image: Optional[str] = None) -
     return "\n".join(lines)
 
 # ===================================================================
-# SYNC Spectrum 区块
+# PARTS Spectrum 区块
 # ===================================================================
 
 def _render_sync_section(sync_result: Dict, local_image: Optional[str] = None) -> str:
-    """渲染 SYNC Spectrum 区块。"""
+    """渲染 PARTS Spectrum 区块。"""
     primary = sync_result.get("primary", sync_result.get("primary_type", {}))
-    rtaps = sync_result.get("rtaps", {})
+    parts = sync_result.get("parts", {})
     warnings = sync_result.get("warnings", [])
 
     sync_name = primary.get("name", primary.get("name_zh", ""))
@@ -518,17 +518,17 @@ def _render_sync_section(sync_result: Dict, local_image: Optional[str] = None) -
         lines.append("> *{q}*".format(q=sync_quote))
         lines.append("")
 
-    # RTAPS 五维雷达（文字版）
-    lines.append("### RTAPS 五维雷达")
+    # PARTS 五维雷达（文字版）
+    lines.append("### PARTS 五维雷达")
     lines.append("")
     lines.append("| 维度 | 得分 | 图示 | 含义 |")
     lines.append("|:---:|:---:|:---|:---|")
 
     for key in ["R", "T", "A", "P", "S"]:
-        score = rtaps.get(key, 0.5)
+        score = parts.get(key, 0.5)
         pct = int(score * 100)
         bar = _bar(score, 15)
-        meta = RTAPS_META.get(key, {})
+        meta = PARTS_META.get(key, {})
         full = meta.get("full", key)
         desc = meta.get("desc", "")
         lines.append(
@@ -579,7 +579,7 @@ def generate_markdown_report(
     Args:
         bond_result: BOND Profile 分类结果
         echo_result: ECHO Matrix 分类结果
-        sync_result: SYNC Spectrum 匹配结果
+        sync_result: PARTS Spectrum 匹配结果
         user_name: 用户名称（可选）
         agent_name: Agent 名称（可选）
         title: 报告标题（可选）
@@ -602,7 +602,7 @@ def generate_markdown_report(
     images = local_images or {}
 
     lines = [
-        "# 🔮 OpenClaw SYNC Spectrum 测评报告",
+        "# 🔮 OpenClaw PARTS Spectrum 测评报告",
         "",
         f"> {title}",
         "",
@@ -634,7 +634,7 @@ def generate_markdown_report(
         )
     )
     lines.append(">")
-    lines.append("> *Powered by OpenClaw SYNC Spectrum v1.0*")
+    lines.append("> *Powered by OpenClaw PARTS Spectrum v1.0*")
 
     return "\n".join(lines)
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-SYNC Spectrum 匹配器 — 人机关系分类 (10 种类型)
+PARTS Spectrum 匹配器 — 人机关系分类 (10 种类型)
 
-根据 BOND Profile 和 ECHO Matrix 的分类结果，计算 RTAPS 五维评分
+根据 BOND Profile 和 ECHO Matrix 的分类结果，计算 PARTS 五维评分
 （Resonance, Tempo, Agency Balance, Precision Mesh, Synergy Index），
 然后与 10 种理想关系类型做余弦相似度匹配。
 
@@ -22,11 +22,11 @@ except ImportError:
 
 
 # ===================================================================
-# 10 种关系类型的理想 RTAPS 向量
+# 10 种关系类型的理想 PARTS 向量
 # ===================================================================
 # 每个类型对应 (R, T, A, P, S) 五维理想值，值域 [0, 1]
 
-IDEAL_RTAPS = {
+IDEAL_PARTS = {
     # ── 高共鸣区 ──────────────────────────────────────────────
     "Kindred Spirit": {          # 知己：深度情感共振 + 高同步 + 中等任务
         "R": 0.95, "T": 0.85, "A": 0.50, "P": 0.55, "S": 0.90,
@@ -66,8 +66,8 @@ IDEAL_RTAPS = {
     },
 }
 
-# RTAPS 维度全称（用于报告）
-RTAPS_DIM_NAMES: Dict[str, str] = {
+# PARTS 维度全称（用于报告）
+PARTS_DIM_NAMES: Dict[str, str] = {
     "R": "Resonance (共振度)",
     "T": "Tempo (节奏度)",
     "A": "Agency Balance (主导权平衡)",
@@ -77,7 +77,7 @@ RTAPS_DIM_NAMES: Dict[str, str] = {
 
 
 # ===================================================================
-# RTAPS 五维评分计算
+# PARTS 五维评分计算
 # ===================================================================
 
 def _extract_bond_scores(bond_result: Dict) -> Dict[str, float]:
@@ -112,9 +112,9 @@ def _extract_echo_scores(echo_result: Dict) -> Dict[str, float]:
     }
 
 
-def compute_rtaps(bond_result: Dict, echo_result: Dict) -> Dict[str, float]:
+def compute_parts(bond_result: Dict, echo_result: Dict) -> Dict[str, float]:
     """
-    根据 BOND 和 ECHO 分类结果计算 RTAPS 五维评分。
+    根据 BOND 和 ECHO 分类结果计算 PARTS 五维评分。
 
     BOND 维度 (值域 [0, 1]):
         T: 0=Sprint, 1=Marathon
@@ -203,7 +203,7 @@ def compute_rtaps(bond_result: Dict, echo_result: Dict) -> Dict[str, float]:
 def _cosine_similarity(vec_a: Dict[str, float],
                        vec_b: Dict[str, float]) -> float:
     """
-    计算两个 RTAPS 向量之间的余弦相似度。
+    计算两个 PARTS 向量之间的余弦相似度。
 
     使用 math.sqrt，纯 stdlib 实现。
     """
@@ -235,7 +235,7 @@ def _euclidean_similarity(vec_a: Dict[str, float], vec_b: Dict[str, float]) -> f
     return 1.0 / (1.0 + math.sqrt(sq_sum))
 
 
-def _rank_all_types(rtaps: Dict[str, float]) -> List[Tuple[str, float]]:
+def _rank_all_types(parts_scores: Dict[str, float]) -> List[Tuple[str, float]]:
     """
     对所有 10 种关系类型计算余弦相似度，按降序排列。
 
@@ -243,9 +243,9 @@ def _rank_all_types(rtaps: Dict[str, float]) -> List[Tuple[str, float]]:
         [(type_code, similarity), ...] 长度 10，从高到低排序
     """
     rankings = []
-    for code, ideal_vec in IDEAL_RTAPS.items():
-        cos_sim = _cosine_similarity(rtaps, ideal_vec)
-        euc_sim = _euclidean_similarity(rtaps, ideal_vec)
+    for code, ideal_vec in IDEAL_PARTS.items():
+        cos_sim = _cosine_similarity(parts_scores, ideal_vec)
+        euc_sim = _euclidean_similarity(parts_scores, ideal_vec)
         # 混合评分: 余弦相似度(方向) + 欧氏相似度(绝对距离), 偏重欧氏
         hybrid = 0.4 * cos_sim + 0.6 * euc_sim
         rankings.append((code, round(hybrid, 4)))
@@ -260,23 +260,22 @@ def _rank_all_types(rtaps: Dict[str, float]) -> List[Tuple[str, float]]:
 
 def _build_type_info(code: str, similarity: float) -> Dict:
     """
-    从 type_definitions.SYNC_TYPES 获取类型详细信息并组装输出结构。
+    从 type_definitions 获取类型详细信息并组装输出结构。
 
-    SYNC_TYPES[code] 的可用字段:
-        name      — 中文名 (如 "知己")
-        en_name   — 英文名 (如 "Confidant")
-        desc      — 描述
-        keywords  — 关键词/特质标签
+    通过 get_sync_type() 获取兼容字段 (name/desc/en_name/keywords)。
 
     输出:
         {
             code, name, name_en, similarity,
             description, quote, traits
         }
-
-    其中 quote 取自 desc (作为引言摘要)，traits 取自 keywords。
     """
-    type_def = SYNC_TYPES.get(code)
+    try:
+        from .type_definitions import get_sync_type
+    except ImportError:
+        from type_definitions import get_sync_type
+
+    type_def = get_sync_type(code)
 
     if type_def is None:
         return {
@@ -291,11 +290,11 @@ def _build_type_info(code: str, similarity: float) -> Dict:
 
     return {
         "code": code,
-        "name": type_def.get("name", code),
+        "name": type_def.get("name", type_def.get("cn_name", code)),
         "name_en": type_def.get("en_name", code),
         "similarity": similarity,
-        "description": type_def.get("desc", ""),
-        "quote": type_def.get("desc", ""),
+        "description": type_def.get("desc", type_def.get("description", "")),
+        "quote": type_def.get("desc", type_def.get("short_desc", "")),
         "traits": type_def.get("keywords", ""),
     }
 
@@ -306,7 +305,7 @@ def _build_type_info(code: str, similarity: float) -> Dict:
 
 def classify(bond_result: Dict, echo_result: Dict) -> Dict:
     """
-    SYNC Spectrum 完整分类流程。
+    PARTS Spectrum 完整分类流程。
 
     输入:
         bond_result: bond_classifier 的输出 dict
@@ -316,7 +315,7 @@ def classify(bond_result: Dict, echo_result: Dict) -> Dict:
 
     输出:
         {
-            "rtaps": {R, T, A, P, S} -> float,
+            "parts": {R, T, A, P, S} -> float,
             "primary": {
                 code, name, name_en, similarity,
                 description, quote, traits
@@ -325,11 +324,11 @@ def classify(bond_result: Dict, echo_result: Dict) -> Dict:
             "rankings": [(code, name, similarity), ...] top 5
         }
     """
-    # 1. 计算 RTAPS 五维评分
-    rtaps = compute_rtaps(bond_result, echo_result)
+    # 1. 计算 PARTS 五维评分
+    parts = compute_parts(bond_result, echo_result)
 
     # 2. 余弦相似度排序
-    all_rankings = _rank_all_types(rtaps)
+    all_rankings = _rank_all_types(parts)
 
     # 3. 组装 primary
     primary_code, primary_sim = all_rankings[0]
@@ -345,11 +344,11 @@ def classify(bond_result: Dict, echo_result: Dict) -> Dict:
     top5 = []
     for code, sim in all_rankings[:5]:
         type_def = SYNC_TYPES.get(code, {})
-        name = type_def.get("name", code)
+        name = type_def.get("cn_name", type_def.get("name", code))
         top5.append((code, name, sim))
 
     return {
-        "rtaps": rtaps,
+        "parts": parts,
         "primary": primary,
         "secondary": secondary,
         "rankings": top5,
@@ -357,14 +356,14 @@ def classify(bond_result: Dict, echo_result: Dict) -> Dict:
 
 
 # ===================================================================
-# 兼容入口: run_sync_spectrum
+# 兼容入口: run_parts_spectrum
 # ===================================================================
-# 保持与 profiler.py 中 `from sync_matcher import run_sync_spectrum`
+# 保持与 profiler.py 中 `from sync_matcher import run_parts_spectrum`
 # 调用方式的兼容性。
 
-def run_sync_spectrum(bond_profile: Dict, echo_profile: Dict) -> Dict:
+def run_parts_spectrum(bond_profile: Dict, echo_profile: Dict) -> Dict:
     """
-    完整的 SYNC Spectrum 分析（兼容旧接口）。
+    完整的 PARTS Spectrum 分析（兼容旧接口）。
 
     参数:
         bond_profile: compute_bond_profile() 的返回值
@@ -381,7 +380,7 @@ def run_sync_spectrum(bond_profile: Dict, echo_profile: Dict) -> Dict:
     """
     result = classify(bond_profile, echo_profile)
 
-    rtaps = result["rtaps"]
+    parts = result["parts"]
 
     # 兼容旧接口字段
     primary = result["primary"]
@@ -407,10 +406,10 @@ def run_sync_spectrum(bond_profile: Dict, echo_profile: Dict) -> Dict:
         }
 
     all_fits = []
-    for code, name, sim in result["rankings"]:
+    for code, name_val, sim in result["rankings"]:
         all_fits.append({
             "code": code,
-            "name_zh": name,
+            "name_zh": name_val,
             "fit_score": sim,
         })
 
@@ -423,12 +422,12 @@ def run_sync_spectrum(bond_profile: Dict, echo_profile: Dict) -> Dict:
         "P": "精度啮合",
     }
     for dim in ["R", "T", "A", "P"]:
-        val = rtaps[dim]
+        val = parts[dim]
         if val < 0.4:
             warnings.append(_generate_warning(dim, dim_labels[dim], val))
 
     return {
-        "rtaps": rtaps,
+        "parts": parts,
         "primary": result["primary"],
         "secondary": result["secondary"],
         "rankings": result["rankings"],
@@ -450,3 +449,8 @@ def _generate_warning(dim: str, label: str, value: float) -> str:
         "P": "认知精度不对接 -- 你的指令风格和Agent能力范围有偏差，调整指令抽象度或换Agent。",
     }
     return "[!] {} ({:.2f}): {}".format(label, value, msgs.get(dim, ""))
+
+
+# 向后兼容别名
+run_sync_spectrum = run_parts_spectrum
+compute_rtaps = compute_parts

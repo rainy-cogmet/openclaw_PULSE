@@ -1161,6 +1161,22 @@ class DataParser:
                 result = _read_optional(alt)
                 if result:
                     return result
+                # 尝试 .openclaw/agents/*/ 子目录 (OpenClaw 标准路径)
+                agents_base = os.path.join(dirpath, '.openclaw', 'agents')
+                if os.path.isdir(agents_base):
+                    try:
+                        for agent_name in sorted(os.listdir(agents_base)):
+                            agent_dir = os.path.join(agents_base, agent_name)
+                            if os.path.isdir(agent_dir):
+                                candidate = os.path.join(agent_dir, name)
+                                if os.path.isfile(candidate):
+                                    try:
+                                        with open(candidate, 'r', encoding='utf-8') as f:
+                                            return f.read()
+                                    except (OSError, UnicodeDecodeError):
+                                        pass
+                    except OSError:
+                        pass
             return ''
 
         soul_text = _read_multi(['SOUL.md', 'soul.md'])
@@ -1173,12 +1189,24 @@ class DataParser:
 
         # Sessions
         sessions = []
-        # 查找 sessions 目录: 优先 sessions/, 其次 .openclaw/sessions/
+        # 查找 sessions 目录, 按优先级尝试:
+        #   1. dirpath/sessions/
+        #   2. dirpath/.openclaw/sessions/
+        #   3. dirpath/.openclaw/agents/*/sessions/  (OpenClaw 标准路径)
         sessions_dir = os.path.join(dirpath, 'sessions')
         if not os.path.isdir(sessions_dir):
             alt_dir = os.path.join(dirpath, '.openclaw', 'sessions')
             if os.path.isdir(alt_dir):
                 sessions_dir = alt_dir
+            else:
+                # OpenClaw 标准路径: .openclaw/agents/<agent_name>/sessions/
+                agents_base = os.path.join(dirpath, '.openclaw', 'agents')
+                if os.path.isdir(agents_base):
+                    for agent_name in sorted(os.listdir(agents_base)):
+                        candidate = os.path.join(agents_base, agent_name, 'sessions')
+                        if os.path.isdir(candidate):
+                            sessions_dir = candidate
+                            break
 
         if os.path.isdir(sessions_dir):
             # 支持 .jsonl 和 .json 文件

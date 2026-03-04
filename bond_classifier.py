@@ -478,10 +478,19 @@ def _score_to_letter(dim_key: str, score: float) -> str:
 class BONDFeatureExtractor:
     """从 OpenClaw 数据中提取 BOND 四维度的原始特征.
 
-    保留此类以兼容 profiler.py 中的调用:
+    .. deprecated::
+        此类为旧版兼容保留。新代码请使用 feature_extractor.FeatureExtractor,
+        它提供更完整的特征提取 (BOND + ECHO) 并与 DataParser 对齐。
+
+    旧调用方式:
         bond_extractor = BONDFeatureExtractor()
         bond_features = bond_extractor.extract_from_sessions(sessions)
         md_features = bond_extractor.extract_from_markdown(md, mem)
+
+    推荐替代:
+        from feature_extractor import FeatureExtractor
+        extractor = FeatureExtractor(parsed_bundle)
+        bond_features, echo_features = extractor.extract_all()
     """
 
     def __init__(self) -> None:
@@ -582,12 +591,27 @@ class BONDFeatureExtractor:
     # extract_from_markdown
     # ------------------------------------------------------------------
     def extract_from_markdown(self, md, mem) -> Dict[str, float]:
-        """从 MarkdownAnalyzer 和 MemoryAnalyzer 提取补充特征."""
+        """从 MarkdownAnalyzer 和 MemoryAnalyzer 提取补充特征.
+
+        .. deprecated:: 使用 FeatureExtractor.extract_bond_features() 替代.
+        """
+        # 安全严格度: 优先调用 get_agents_safety_strictness,
+        # 不存在时 fallback 到 agents_text 的关键词检测
+        safety = 2.5
+        if hasattr(md, 'get_agents_safety_strictness'):
+            safety = md.get_agents_safety_strictness() * 5
+        elif hasattr(md, 'agents_text'):
+            # 简单关键词检测
+            text = (md.agents_text or '').lower()
+            high_kw = ['safety', 'filter', 'restrict', 'never', 'must not']
+            safety = 2.5 + sum(0.5 for k in high_kw if k in text)
+            safety = min(5.0, safety)
+
         return {
             "user_md_richness": float(md.get_user_md_richness()),
             "memory_personal_ratio": mem.get_memory_personal_ratio(),
             "multi_day_topic_persistence": mem.get_topic_persistence(),
-            "agents_md_safety_strictness": md.get_agents_safety_strictness() * 5,
+            "agents_md_safety_strictness": safety,
         }
 
 

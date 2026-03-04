@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-OpenClaw SYNC Spectrum Image Generator
+OpenClaw PARTS Spectrum Image Generator
 使用 matplotlib 和 PIL 生成本地图片报告
 """
 
@@ -170,7 +170,7 @@ def generate_echo_chart(echo_result: Dict, output_dir: str):
 
 def generate_sync_chart(sync_result: Dict, output_dir: str):
     """
-    生成 SYNC Spectrum 图片
+    生成 PARTS Spectrum 图片
     """
     try:
         from .card_generator import _normalize_sync
@@ -179,12 +179,12 @@ def generate_sync_chart(sync_result: Dict, output_dir: str):
 
     sync_result = _normalize_sync(sync_result)
     primary = sync_result.get("primary", sync_result.get("primary_type", {}))
-    rtaps = sync_result.get("rtaps", {})
+    parts = sync_result.get("parts", {})
     name = primary.get("name", primary.get("name_zh", "Unknown"))
     
     categories = ["共振 (R)", "节奏 (T)", "主导 (A)", "精度 (P)", "协同 (S)"]
     keys = ["R", "T", "A", "P", "S"]
-    values = [rtaps.get(k, 0.5) for k in keys]
+    values = [parts.get(k, 0.5) for k in keys]
     
     filename = os.path.join(output_dir, f"sync_chart_{name}.png")
     _create_radar_chart(categories, values, f"SYNC Relationship: {name}", filename, color='blue')

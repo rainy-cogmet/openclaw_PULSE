@@ -14,10 +14,7 @@ import re
 from collections import Counter
 
 try:
-    try:
-        from .utils import clamp, compute_cv, compute_shannon_diversity, tokenize_mixed
-    except ImportError:
-        from utils import clamp, compute_cv, compute_shannon_diversity, tokenize_mixed
+    from .utils import clamp, compute_cv, compute_shannon_diversity, tokenize_mixed
 except ImportError:
     from utils import clamp, compute_cv, compute_shannon_diversity, tokenize_mixed
 

@@ -1,4 +1,4 @@
-# OpenClaw SYNC Spectrum Profiler — v3.1 Changelog
+# OpenClaw PARTS Spectrum Profiler — v3.1 Changelog
 
 ## v3.1
 
