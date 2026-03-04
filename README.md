@@ -3,7 +3,8 @@
 ## 概述
 
 OpenClaw PULSE Spectrum Profiler — 人机关系测评工具。
-
+> **PULSE**（**P**rofiling **U**ser-**L**M **S**ynergy & **E**ngagement）是全球首个类 MBTI 的人机协作风格评测体系，通过 **人类侧 × Agent 侧 × 人机关系侧** 三大模块，为每位用户生成独一无二的 **人机协作风格画像**，帮助个人找到最佳 AI 搭档模式，帮助组织构建高效人机协同团队。
+> 
 基于 **BOND Profile**（16 种用户类型）、**ECHO Matrix**（16 种 Agent 类型）和 **PARTS Spectrum**（10 种关系类型）三层模型，对 OpenClaw 生态中的人机交互进行量化画像与关系诊断。
 
 | 层级 | 模型 | 维度 | 输出 |
