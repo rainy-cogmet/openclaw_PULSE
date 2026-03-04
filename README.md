@@ -150,6 +150,7 @@ supported JSON formats:
 
 ### 方式 2: 目录结构 (--dir)
 
+#### 标准结构
 ```
 my_agent/
 ├── SOUL.md              # Agent 灵魂设定（必需）
@@ -170,6 +171,31 @@ my_agent/
 │   └── ...
 └── .openclaw/          # OpenClaw 配置目录（可选）
     └── ...
+```
+
+#### 处理拆分目录（工作区与会话分离）
+如果您的 OpenClaw 配置中，工作区文件（SOUL.md、USER.md 等）和会话文件（sessions/）在不同目录（常见于默认 OpenClaw 部署），可以使用符号链接快速创建统一的测评目录：
+
+```bash
+# 创建临时测评目录
+mkdir -p temp_profiler_dir
+cd temp_profiler_dir
+
+# 链接工作区文件（根据您的实际路径调整）
+ln -sf ~/.openclaw/workspace/SOUL.md .
+ln -sf ~/.openclaw/workspace/IDENTITY.md .
+ln -sf ~/.openclaw/workspace/USER.md .
+ln -sf ~/.openclaw/workspace/AGENTS.md .
+ln -sf ~/.openclaw/workspace/MEMORY.md .
+ln -sf ~/.openclaw/workspace/memory .
+ln -sf ~/.openclaw/workspace/skills .
+
+# 链接会话文件（根据您的实际路径调整）
+ln -sf ~/.openclaw/agents/main/sessions .
+
+# 运行测评
+cd ..
+python3 openclaw_haci/profiler.py --dir temp_profiler_dir -o output_reports --format both
 ```
 
 ---

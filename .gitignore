@@ -12,6 +12,11 @@ build/
 !SKILL.md
 !CHANGELOG_v31.md
 output_reports/
+output_reports_with_sessions/
+temp_profiler_dir/
 scripts/
 assets/
 sessions/
+card_generator_v32.diff
+card_generator_with_images.py
+card_generator.py.rej
