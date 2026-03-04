@@ -384,12 +384,6 @@ MIT License
 
 ---
 
-## 作者
-
-孟昊宇
-
----
-
 *Powered by OpenClaw SYNC Spectrum v1.0*
 
 *理论基础: Dryer & Horowitz (1997), Edwards (1991/2008), Fiske (1992/2002), Furr (2008)*
