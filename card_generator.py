@@ -30,49 +30,49 @@ GITHUB_RAW_BASE = "https://raw.githubusercontent.com/rainy-cogmet/openclaw_haci/
 # BOND 类型图片映射 (按类型码)
 BOND_IMAGE_URLS = {
     # 即用型工具派 (SU) 紫
-    "SUPH": f"{GITHUB_RAW_BASE}/images/bond/SUPH.png",
-    "SUPD": f"{GITHUB_RAW_BASE}/images/bond/SUPD.png",
-    "SURH": f"{GITHUB_RAW_BASE}/images/bond/SURH.png",
-    "SURD": f"{GITHUB_RAW_BASE}/images/bond/SURD.png",
+    "SUPH": f"{GITHUB_RAW_BASE}/images/SUPH.png",
+    "SUPD": f"{GITHUB_RAW_BASE}/images/SUPD.png",
+    "SURH": f"{GITHUB_RAW_BASE}/images/SURH.png",
+    "SURD": f"{GITHUB_RAW_BASE}/images/SURD.png",
     # 即时协作派 (SC) 黄
-    "SCPH": f"{GITHUB_RAW_BASE}/images/bond/SCPH.png",
-    "SCPD": f"{GITHUB_RAW_BASE}/images/bond/SCPD.png",
-    "SCRH": f"{GITHUB_RAW_BASE}/images/bond/SCRH.png",
-    "SCRD": f"{GITHUB_RAW_BASE}/images/bond/SCRD.png",
+    "SCPH": f"{GITHUB_RAW_BASE}/images/SCPH.png",
+    "SCPD": f"{GITHUB_RAW_BASE}/images/SCPD.png",
+    "SCRH": f"{GITHUB_RAW_BASE}/images/SCRH.png",
+    "SCRD": f"{GITHUB_RAW_BASE}/images/SCRD.png",
     # 长线工具派 (MU) 蓝
-    "MUPH": f"{GITHUB_RAW_BASE}/images/bond/MUPH.png",
-    "MUPD": f"{GITHUB_RAW_BASE}/images/bond/MUPD.png",
-    "MURH": f"{GITHUB_RAW_BASE}/images/bond/MURH.png",
-    "MURD": f"{GITHUB_RAW_BASE}/images/bond/MURD.png",
+    "MUPH": f"{GITHUB_RAW_BASE}/images/MUPH.png",
+    "MUPD": f"{GITHUB_RAW_BASE}/images/MUPD.png",
+    "MURH": f"{GITHUB_RAW_BASE}/images/MURH.png",
+    "MURD": f"{GITHUB_RAW_BASE}/images/MURD.png",
     # 深度伙伴派 (MC) 绿
-    "MCPH": f"{GITHUB_RAW_BASE}/images/bond/MCPH.png",
-    "MCPD": f"{GITHUB_RAW_BASE}/images/bond/MCPD.png",
-    "MCRH": f"{GITHUB_RAW_BASE}/images/bond/MCRH.png",
-    "MCRD": f"{GITHUB_RAW_BASE}/images/bond/MCRD.png",
+    "MCPH": f"{GITHUB_RAW_BASE}/images/MCPH.png",
+    "MCPD": f"{GITHUB_RAW_BASE}/images/MCPD.png",
+    "MCRH": f"{GITHUB_RAW_BASE}/images/MCRH.png",
+    "MCRD": f"{GITHUB_RAW_BASE}/images/MCRD.png",
 }
 
 # ECHO 类型图片映射 (按类型码)
 ECHO_IMAGE_URLS = {
     # RSxx 被动专精组
-    "RSFT": f"{GITHUB_RAW_BASE}/images/echo/RSFT.png",
-    "RSFC": f"{GITHUB_RAW_BASE}/images/echo/RSFC.png",
-    "RSET": f"{GITHUB_RAW_BASE}/images/echo/RSET.png",
-    "RSEC": f"{GITHUB_RAW_BASE}/images/echo/RSEC.png",
+    "RSFT": f"{GITHUB_RAW_BASE}/images/RSFT.png",
+    "RSFC": f"{GITHUB_RAW_BASE}/images/RSFC.png",
+    "RSET": f"{GITHUB_RAW_BASE}/images/RSET.png",
+    "RSEC": f"{GITHUB_RAW_BASE}/images/RSEC.png",
     # RGxx 被动通才组
-    "RGFT": f"{GITHUB_RAW_BASE}/images/echo/RGFT.png",
-    "RGFC": f"{GITHUB_RAW_BASE}/images/echo/RGFC.png",
-    "RGET": f"{GITHUB_RAW_BASE}/images/echo/RGET.png",
-    "RGEC": f"{GITHUB_RAW_BASE}/images/echo/RGEC.png",
+    "RGFT": f"{GITHUB_RAW_BASE}/images/RGFT.png",
+    "RGFC": f"{GITHUB_RAW_BASE}/images/RGFC.png",
+    "RGET": f"{GITHUB_RAW_BASE}/images/RGET.png",
+    "RGEC": f"{GITHUB_RAW_BASE}/images/RGEC.png",
     # PSxx 主动专精组
-    "PSFT": f"{GITHUB_RAW_BASE}/images/echo/PSFT.png",
-    "PSFC": f"{GITHUB_RAW_BASE}/images/echo/PSFC.png",
-    "PSET": f"{GITHUB_RAW_BASE}/images/echo/PSET.png",
-    "PSEC": f"{GITHUB_RAW_BASE}/images/echo/PSEC.png",
+    "PSFT": f"{GITHUB_RAW_BASE}/images/PSFT.png",
+    "PSFC": f"{GITHUB_RAW_BASE}/images/PSFC.png",
+    "PSET": f"{GITHUB_RAW_BASE}/images/PSET.png",
+    "PSEC": f"{GITHUB_RAW_BASE}/images/PSEC.png",
     # PGxx 主动通才组
-    "PGFT": f"{GITHUB_RAW_BASE}/images/echo/PGFT.png",
-    "PGFC": f"{GITHUB_RAW_BASE}/images/echo/PGFC.png",
-    "PGET": f"{GITHUB_RAW_BASE}/images/echo/PGET.png",
-    "PGEC": f"{GITHUB_RAW_BASE}/images/echo/PGEC.png",
+    "PGFT": f"{GITHUB_RAW_BASE}/images/PGFT.png",
+    "PGFC": f"{GITHUB_RAW_BASE}/images/PGFC.png",
+    "PGET": f"{GITHUB_RAW_BASE}/images/PGET.png",
+    "PGEC": f"{GITHUB_RAW_BASE}/images/PGEC.png",
 }
 
 def _get_bond_image(code: str) -> str:
