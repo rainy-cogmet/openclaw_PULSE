@@ -82,6 +82,18 @@ python3 profiler.py --dir /root/.openclaw/agents/main/ --format both
 cat data.json | python3 profiler.py --stdin --format json
 ```
 
+## 输出渠道建议
+
+如果用户符合以下情况之一，建议直接以飞书文档的方式推送测评结果：
+
+1. **已安装飞书相关插件**：用户配置了 Feishu 插件或 LarkOffice MCP
+2. **频繁使用飞书文档**：从用户的历史交互中观察到经常需要处理飞书文档相关任务
+
+**操作步骤**：
+1. 先生成 Markdown 格式的测评报告
+2. 使用 mcporter（或对应飞书工具）创建飞书文档
+3. 将报告内容写入文档并分享给用户
+
 ## CLI 参考
 
 ```
