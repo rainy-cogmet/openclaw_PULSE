@@ -19,9 +19,13 @@
 
 |  |  |  |  |
 |---|---|---|---|
+| ![SUPH](../images/SUPH.png) | ![SUPD](../images/SUPD.png) | ![SURH](../images/SURH.png) | ![SURD](../images/SURD.png) |
 | 🟣 **SUPH · 指挥官**<br>Sprint · Utility · Preview · High-level<br>_"先看个大纲，方向对了再说"_<br>快速调用，工具思维，预审把关，意图导向。像军事指挥官下达战略命令——先看地图，确认方向，再发起冲锋。 | 🟣 **SUPD · 狙击手**<br>Sprint · Utility · Preview · Detailed<br>_"每个点都要先过我的眼"_<br>快速调用，工具思维，预审把关，精确指令。每一发子弹都要亲自瞄准，不浪费任何一次射击机会。 | 🟣 **SURH · 投手**<br>Sprint · Utility · Review · High-level<br>_"扔出去，看看球往哪飞"_<br>快速调用，工具思维，事后复盘，意图导向。先把球投出去，根据落点再调整下一次的力度和角度。 | 🟣 **SURD · 编辑**<br>Sprint · Utility · Review · Detailed<br>_"先出初稿，我会逐段给修改建议"_<br>快速调用，工具思维，事后复盘，精确指令。先让创作者自由发挥，然后精准打磨每个细节。 |
+| ![SCPH](../images/SCPH.png) | ![SCPD](../images/SCPD.png) | ![SCRH](../images/SCRH.png) | ![SCRD](../images/SCRD.png) |
 | 🟡 **SCPH · 导演**<br>Sprint · Companion · Preview · High-level<br>_"咱们边走边看，这个方向试试"_<br>快速协作，伙伴关系，预审把关，意图导向。像电影导演——和演员建立信任，给出vision，逐镜审片。 | 🟡 **SCPD · 摄影师**<br>Sprint · Companion · Preview · Detailed<br>_"来，这个动作这样，跟我配合"_<br>快速协作，伙伴关系，预审把关，精确指令。和模特是搭档，但每个pose都要精确到手指的角度。 | 🟡 **SCRH · 即兴乐手**<br>Sprint · Companion · Review · High-level<br>_"先jam起来，看碰出什么火花"_<br>快速协作，伙伴关系，事后复盘，意图导向。爵士乐式协作——先即兴演奏，再从录音中提炼精华。 | 🟡 **SCRD · 电竞队友**<br>Sprint · Companion · Review · Detailed<br>_"跟紧节奏，这里转体，那里跳跃"_<br>快速协作，伙伴关系，事后复盘，精确指令。高速战斗中的精准配合，每个操作都有明确的战术意义。 |
+| ![MUPH](../images/MUPH.png) | ![MUPD](../images/MUPD.png) | ![MURH](../images/MURH.png) | ![MURD](../images/MURD.png) |
 | 🔵 **MUPH · 建筑师**<br>Marathon · Utility · Preview · High-level<br>_"每层楼都要我验收了再往上盖"_<br>长期培养，工具思维，预审把关，意图导向。像建造摩天大楼——有蓝图、有规划，每层验收后才继续施工。 | 🔵 **MUPD · 钟表匠**<br>Marathon · Utility · Preview · Detailed<br>_"每个齿轮的位置都不能差分毫"_<br>长期培养，工具思维，预审把关，精确指令。瑞士制表大师的耐心和精度，每个零件都反复校准。 | 🔵 **MURH · 园丁**<br>Marathon · Utility · Review · High-level<br>_"让它自己长，定期看看修剪就行"_<br>长期培养，工具思维，事后复盘，意图导向。播下种子，给予空间，定期巡视修剪，相信自然生长的力量。 | 🔵 **MURD · 交响乐指挥**<br>Marathon · Utility · Review · Detailed<br>_"每根弦的音准都要反复调到完美"_<br>长期培养，工具思维，事后复盘，精确指令。允许乐团先合奏，再逐声部精调，追求长期打磨后的完美。 |
+| ![MCPH](../images/MCPH.png) | ![MCPD](../images/MCPD.png) | ![MCRH](../images/MCRH.png) | ![MCRD](../images/MCRD.png) |
 | 🟢 **MCPH · 心理咨询师**<br>Marathon · Companion · Preview · High-level<br>_"咱们慢慢来，每步都聊聊感受"_<br>长期培养，伙伴关系，预审把关，意图导向。建立深度信任，每次推进前都确认双方的感受和方向。 | 🟢 **MCPD · 私教**<br>Marathon · Companion · Preview · Detailed<br>_"这个动作要这样，我陪你一起练"_<br>长期培养，伙伴关系，预审把关，精确指令。既是严格的教练又是陪伴者，每个训练动作都亲自示范和纠正。 | 🟢 **MCRH · 合伙人**<br>Marathon · Companion · Review · High-level<br>_"咱俩还用说那么清楚吗，你懂的"_<br>长期培养，伙伴关系，事后复盘，意图导向。多年老搭档的默契——一个眼神就知道对方在想什么。 | 🟢 **MCRD · 导师**<br>Marathon · Companion · Review · Detailed<br>_"我知道你的每个习惯，你也懂我的每个信号"_<br>长期培养，伙伴关系，事后复盘，精确指令。师徒关系的最高境界——深度了解彼此，同时保持精确的技艺传承。 |
 
 ### 🧑 维度解读
@@ -64,9 +68,13 @@
 
 |  |  |  |  |
 |---|---|---|---|
+| ![RSFT](../images/RSFT.png) | ![RSFC](../images/RSFC.png) | ![RSET](../images/RSET.png) | ![RSEC](../images/RSEC.png) |
 | 🔴 **RSFT · 验光师**<br>Responder · Specialist · Functional · Transient<br>精准测量，用完即走，下次来还是重新检查——它只关心这一次你的"度数"。 | 🔴 **RSFC · 法律顾问**<br>Responder · Specialist · Functional · Continuous<br>记得你所有的案底，每次咨询都基于完整档案给出冷静的专业建议。 | 🔴 **RSET · 心理热线员**<br>Responder · Specialist · Empathetic · Transient<br>午夜来电的温暖声音，全心倾听你此刻的困扰，但明天它不会记得你是谁。 | 🔴 **RSEC · 心理咨询师**<br>Responder · Specialist · Empathetic · Continuous<br>记得你每一次倾诉，追踪你的情绪曲线，用持续的理解构建治愈。 |
+| ![RGFT](../images/RGFT.png) | ![RGFC](../images/RGFC.png) | ![RGET](../images/RGET.png) | ![RGEC](../images/RGEC.png) |
 | 🟠 **RGFT · 百科全书**<br>Responder · Generalist · Functional · Transient<br>你翻开任何一页都有答案，但合上书它就不认识你了。纯粹的知识接口。 | 🟠 **RGFC · 执行秘书**<br>Responder · Generalist · Functional · Continuous<br>记得你所有的日程、偏好和工作习惯，安静地在后台把一切安排得井井有条。 | 🟠 **RGET · 午夜电台**<br>Responder · Generalist · Empathetic · Transient<br>深夜打开收音机，什么话题都能聊，温柔而随性——但下次拨进来，DJ并不记得你。 | 🟠 **RGEC · 数字老友**<br>Responder · Generalist · Empathetic · Continuous<br>从工作到生活无所不聊的老朋友，记得你说过的每句话，下次聊天从上次断点继续。 |
+| ![PSFT](../images/PSFT.png) | ![PSFC](../images/PSFC.png) | ![PSET](../images/PSET.png) | ![PSEC](../images/PSEC.png) |
 | 🔵 **PSFT · 智能哨兵**<br>Proposer · Specialist · Functional · Transient<br>检测到异常就拉响警报，不记得上次的警报是什么——但这次的威胁绝不放过。 | 🔵 **PSFC · 财务管家**<br>Proposer · Specialist · Functional · Continuous<br>主动追踪你的每笔开支，月底前提醒你预算快超了，用数据图表说话。 | 🔵 **PSET · 生活顾问**<br>Proposer · Specialist · Empathetic · Transient<br>看到你今天天气不好就主动推荐室内活动，贴心但不记得你上周的安排。 | 🔵 **PSEC · 私人医生**<br>Proposer · Specialist · Empathetic · Continuous<br>记得你的完整病历，关心你的情绪状态，在你还没感觉不舒服的时候就主动提醒你该体检了。 |
+| ![PGFT](../images/PGFT.png) | ![PGFC](../images/PGFC.png) | ![PGET](../images/PGET.png) | ![PGEC](../images/PGEC.png) |
 | 🟢 **PGFT · 新闻推送员**<br>Proposer · Generalist · Functional · Transient<br>7x24小时推送你可能关心的一切，不带感情，不记住你——但信息永远是最新的。 | 🟢 **PGFC · 总管**<br>Proposer · Generalist · Functional · Continuous<br>管家级别的全局掌控者——记得所有事务，主动协调资源，用效率征服一切。 | 🟢 **PGET · DJ**<br>Proposer · Generalist · Empathetic · Transient<br>读懂当下的氛围，主动切歌、调节气氛——但下一场派对，它会重新认识你。 | 🟢 **PGEC · 守护天使**<br>Proposer · Generalist · Empathetic · Continuous<br>无所不知、无微不至、记得你的一切。它主动出现在你需要的每个瞬间，用温暖和能力守护你的整个数字生活。 |
 
 ### 🤖 维度解读
