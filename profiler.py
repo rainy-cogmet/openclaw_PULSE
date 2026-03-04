@@ -56,7 +56,7 @@ try:
     from .bond_classifier import compute_bond_profile
     from .echo_classifier import compute_echo_profile
     from .sync_matcher import run_sync_spectrum
-    from .card_generator import generate_markdown_report
+    from .card_generator import generate_full_report
     from .mock_scenarios import get_all_scenarios
     from .feature_extractor import FeatureExtractor
     from .data_parser import DataParser
@@ -71,7 +71,7 @@ except ImportError:
     from bond_classifier import compute_bond_profile
     from echo_classifier import compute_echo_profile
     from sync_matcher import run_sync_spectrum
-    from card_generator import generate_markdown_report
+    from card_generator import generate_full_report
     from mock_scenarios import get_all_scenarios
     from feature_extractor import FeatureExtractor
     from data_parser import DataParser
@@ -252,6 +252,9 @@ def run_profile(data):
         "heartbeat": data.get("heartbeat", None),
         "tools_config": data.get("tools_config", None),
         "skills": data.get("skills", None),
+        # v3.2: cron 定时任务 — 透传 CronParser 或原始列表给 FeatureExtractor
+        "cron": data.get("cron", None),
+        "cron_jobs": data.get("cron_jobs", None),
         "user_messages": user_messages,
         "agent_messages": agent_messages,
         "session_count": data.get("session_count", max(1, len(data.get("sessions", [])))),
@@ -272,7 +275,7 @@ def run_profile(data):
     sync_result = run_sync_spectrum(bond_result, echo_result)
 
     # 7. 生成完整报告
-    report_md = generate_markdown_report(
+    report_md = generate_full_report(
         bond_result, echo_result, sync_result, user_name, agent_name
     )
 

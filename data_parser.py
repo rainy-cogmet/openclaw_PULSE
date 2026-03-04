@@ -729,6 +729,277 @@ class MemoryAnalyzer:
         return (max(dates) - min(dates)).days
 
 
+
+
+# =====================================================================
+# CronParser
+# =====================================================================
+
+class CronParser:
+    """解析 OpenClaw cron 任务配置 (jobs.json + runs/*.jsonl).
+
+    数据源:
+      - ~/.openclaw/cron/jobs.json  → 任务定义列表
+      - ~/.openclaw/cron/runs/<jobId>.jsonl → 运行历史 (可选)
+
+    也支持 bundle 模式: 直接传入 jobs list (dict 列表)。
+
+    输出的 cron 指标供 ECHO I 维度使用:
+      - cron_job_count: 总任务数
+      - cron_enabled_count: 启用任务数
+      - cron_recurring_ratio: 重复任务占比 (every/cron vs at)
+      - cron_isolated_ratio: 隔离会话任务占比
+      - cron_frequency_score: 任务频繁度 [0,1]
+      - cron_proactivity_score: 综合主动度 [0,1] — 直接输入 ECHO I 维
+    """
+
+    # 常见 cron 表达式 → 近似间隔(毫秒), 用于频率估算
+    _COMMON_CRON_INTERVALS_MS = {
+        '* * * * *': 60_000,           # 每分钟
+        '*/5 * * * *': 300_000,        # 每5分钟
+        '*/15 * * * *': 900_000,       # 每15分钟
+        '*/30 * * * *': 1_800_000,     # 每30分钟
+        '0 * * * *': 3_600_000,        # 每小时
+    }
+
+    def __init__(self, jobs=None, cron_dir=None):
+        """
+        Args:
+            jobs: list[dict] — 直接传入 job 对象列表 (bundle 模式)
+            cron_dir: str — cron 目录路径, 含 jobs.json + runs/ (目录模式)
+        """
+        self.jobs = []
+        self.runs = {}  # jobId → list[dict]
+
+        if jobs and isinstance(jobs, list):
+            self.jobs = [j for j in jobs if isinstance(j, dict)]
+        elif cron_dir and os.path.isdir(cron_dir):
+            self._load_from_dir(cron_dir)
+
+    def _load_from_dir(self, cron_dir):
+        """从 cron/ 目录加载 jobs.json + runs/."""
+        jobs_path = os.path.join(cron_dir, 'jobs.json')
+        if os.path.isfile(jobs_path):
+            try:
+                with open(jobs_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                if isinstance(data, list):
+                    self.jobs = [j for j in data if isinstance(j, dict)]
+                elif isinstance(data, dict):
+                    # 可能是 {jobs: [...]} 包装
+                    self.jobs = [j for j in data.get('jobs', []) if isinstance(j, dict)]
+            except (json.JSONDecodeError, OSError):
+                pass
+
+        # 可选: 加载运行历史
+        runs_dir = os.path.join(cron_dir, 'runs')
+        if os.path.isdir(runs_dir):
+            for fname in os.listdir(runs_dir):
+                if fname.endswith('.jsonl'):
+                    job_id = fname[:-6]  # 去掉 .jsonl
+                    records = []
+                    try:
+                        with open(os.path.join(runs_dir, fname), 'r', encoding='utf-8') as f:
+                            for line in f:
+                                line = line.strip()
+                                if line:
+                                    records.append(json.loads(line))
+                    except (json.JSONDecodeError, OSError):
+                        pass
+                    if records:
+                        self.runs[job_id] = records
+
+    # ── 基础统计 ──
+
+    def has_cron(self):
+        """是否配置了 cron 任务."""
+        return len(self.jobs) > 0
+
+    def get_job_count(self):
+        """总任务数."""
+        return len(self.jobs)
+
+    def get_enabled_count(self):
+        """启用任务数."""
+        return sum(1 for j in self.jobs if j.get('enabled', True))
+
+    def get_recurring_count(self):
+        """重复任务数 (schedule.kind == 'every' 或 'cron')."""
+        count = 0
+        for j in self.jobs:
+            kind = self._get_schedule_kind(j)
+            if kind in ('every', 'cron'):
+                count += 1
+        return count
+
+    def get_isolated_count(self):
+        """隔离会话任务数 (sessionTarget == 'isolated')."""
+        return sum(1 for j in self.jobs
+                   if j.get('sessionTarget', '') == 'isolated')
+
+    def get_agent_turn_count(self):
+        """payload.kind == 'agentTurn' 的任务数."""
+        return sum(1 for j in self.jobs
+                   if isinstance(j.get('payload'), dict)
+                   and j['payload'].get('kind') == 'agentTurn')
+
+    def get_system_event_count(self):
+        """payload.kind == 'systemEvent' 的任务数."""
+        return sum(1 for j in self.jobs
+                   if isinstance(j.get('payload'), dict)
+                   and j['payload'].get('kind') == 'systemEvent')
+
+    def get_total_runs(self):
+        """所有任务的总运行次数 (从 runs/ 历史统计)."""
+        return sum(len(records) for records in self.runs.values())
+
+    # ── 派生指标 ──
+
+    def get_recurring_ratio(self):
+        """重复任务占比 [0,1]."""
+        total = len(self.jobs)
+        if total == 0:
+            return 0.0
+        return self.get_recurring_count() / total
+
+    def get_isolated_ratio(self):
+        """隔离会话任务占比 [0,1]."""
+        total = len(self.jobs)
+        if total == 0:
+            return 0.0
+        return self.get_isolated_count() / total
+
+    def get_frequency_score(self):
+        """任务频繁度评分 [0,1].
+
+        算法:
+          1. 只计算启用的重复任务 (every/cron)
+          2. 每个任务根据间隔映射到 [0,1]:
+             - <1h (3600000ms) → 1.0
+             - 1~6h → 0.7
+             - 6~24h → 0.4
+             - >24h → 0.2
+          3. 取所有任务频率分的加权平均 (启用任务权重更高)
+          4. 一次性任务 (at) 不影响频率分
+        """
+        scores = []
+        for j in self.jobs:
+            if not j.get('enabled', True):
+                continue
+            kind = self._get_schedule_kind(j)
+            if kind == 'at':
+                continue  # 一次性不影响
+
+            interval_ms = self._estimate_interval_ms(j)
+            if interval_ms <= 0:
+                scores.append(0.3)  # 无法估算, 给中低分
+                continue
+
+            if interval_ms < 3_600_000:       # <1h: 高频
+                scores.append(1.0)
+            elif interval_ms < 21_600_000:    # 1-6h: 中高频
+                scores.append(0.7)
+            elif interval_ms < 86_400_000:    # 6-24h: 中频
+                scores.append(0.4)
+            else:                              # >24h: 低频
+                scores.append(0.2)
+
+        if not scores:
+            return 0.0
+        return sum(scores) / len(scores)
+
+    def get_proactivity_score(self):
+        """Cron 主动度综合评分 [0,1] — 直接用于 ECHO I 维度.
+
+        综合考虑:
+          - 启用任务数 (log 归一化, 3个任务为中位)  — 权重 0.30
+          - 重复任务比例 (重复 → 更主动)             — 权重 0.25
+          - 频繁度 (高频 → 更主动)                    — 权重 0.25
+          - agentTurn 任务占比 (Agent 驱动 → 更主动)  — 权重 0.20
+        """
+        if not self.jobs:
+            return 0.0
+
+        import math
+
+        # 启用任务数: log2(n+1)/3.0, 8个任务时饱和
+        enabled = self.get_enabled_count()
+        count_score = min(1.0, math.log2(enabled + 1) / 3.0)
+
+        # 重复任务比例
+        recurring_ratio = self.get_recurring_ratio()
+
+        # 频繁度
+        freq_score = self.get_frequency_score()
+
+        # agentTurn 占比: Agent 主动对话比系统事件更"主动"
+        total = len(self.jobs)
+        agent_turn_ratio = self.get_agent_turn_count() / total if total > 0 else 0.0
+
+        # 加权综合
+        raw = (0.30 * count_score
+               + 0.25 * recurring_ratio
+               + 0.25 * freq_score
+               + 0.20 * agent_turn_ratio)
+
+        return min(max(raw, 0.0), 1.0)
+
+    # ── 内部方法 ──
+
+    @staticmethod
+    def _get_schedule_kind(job):
+        """提取 schedule.kind, 兼容扁平和嵌套结构."""
+        schedule = job.get('schedule', {})
+        if isinstance(schedule, dict):
+            return schedule.get('kind', 'at')
+        return str(schedule) if schedule else 'at'
+
+    def _estimate_interval_ms(self, job):
+        """估算任务执行间隔 (毫秒).
+
+        优先级: everyMs > expr (cron 表达式) > 0 (无法估算)
+        """
+        schedule = job.get('schedule', {})
+        if not isinstance(schedule, dict):
+            return 0
+
+        # every 类型: 直接读 everyMs
+        every_ms = schedule.get('everyMs', 0)
+        if every_ms and every_ms > 0:
+            return every_ms
+
+        # cron 表达式: 先查常见模式, 否则粗估
+        expr = schedule.get('expr', '').strip()
+        if expr:
+            if expr in self._COMMON_CRON_INTERVALS_MS:
+                return self._COMMON_CRON_INTERVALS_MS[expr]
+            # 粗估: 按字段数判断
+            parts = expr.split()
+            if len(parts) >= 5:
+                # 如果分钟字段是 */N, 可以估算
+                minute_field = parts[0]
+                if minute_field.startswith('*/'):
+                    try:
+                        n = int(minute_field[2:])
+                        return n * 60_000
+                    except ValueError:
+                        pass
+                # 如果小时字段是 */N
+                if len(parts) > 1 and parts[1].startswith('*/'):
+                    try:
+                        n = int(parts[1][2:])
+                        return n * 3_600_000
+                    except ValueError:
+                        pass
+                # 如果小时字段是具体数字, 大概每天一次
+                if len(parts) > 1 and parts[1].isdigit():
+                    return 86_400_000  # ~24h
+            # 无法解析, 默认每天
+            return 86_400_000
+
+        return 0
+
+
 # =====================================================================
 # HeartbeatParser
 # =====================================================================
@@ -1099,6 +1370,15 @@ class DataParser:
         if total_turns == 0:
             total_turns = len(user_messages) + len(agent_messages)
 
+        # Cron: 从 bundle 中解析 cron_jobs / cron 字段
+        cron_data = bundle.get('cron_jobs', bundle.get('cron', []))
+        if isinstance(cron_data, list) and cron_data:
+            cr = CronParser(jobs=cron_data)
+        elif hasattr(cron_data, 'has_cron'):
+            cr = cron_data  # 已经是 CronParser 或 Mock 对象
+        else:
+            cr = CronParser()
+
         return {
             'sessions': sessions,
             'markdown': md,
@@ -1106,6 +1386,7 @@ class DataParser:
             'heartbeat': hb,
             'tools_config': tc,
             'skills': sk,
+            'cron': cr,
             'user_messages': user_messages,
             'agent_messages': agent_messages,
             'session_count': max(len(sessions), bundle.get('session_count', 1)),
@@ -1118,7 +1399,7 @@ class DataParser:
                if k not in ('sessions', 'soul', 'soul_text', 'identity', 'identity_text',
                             'user', 'user_text', 'agents', 'agents_text',
                             'heartbeat', 'tools', 'memory_md', 'memory_md_text',
-                            'messages')},
+                            'messages', 'cron', 'cron_jobs')},
         }
 
     @staticmethod
@@ -1212,6 +1493,15 @@ class DataParser:
         skills_dir = os.path.join(dirpath, 'skills')
         sk = SkillsAnalyzer(skills_dir if os.path.isdir(skills_dir) else '')
 
+        # Cron
+        cron_dir = os.path.join(dirpath, 'cron')
+        if not os.path.isdir(cron_dir):
+            # 尝试 .openclaw/cron/
+            alt_cron = os.path.join(dirpath, '.openclaw', 'cron')
+            if os.path.isdir(alt_cron):
+                cron_dir = alt_cron
+        cr = CronParser(cron_dir=cron_dir if os.path.isdir(cron_dir) else None)
+
         # 聚合
         user_messages = DataParser.extract_user_messages(sessions)
         agent_messages = DataParser.extract_agent_messages(sessions)
@@ -1228,6 +1518,7 @@ class DataParser:
             'heartbeat': hb,
             'tools_config': tc,
             'skills': sk,
+            'cron': cr,
             'user_messages': user_messages,
             'agent_messages': agent_messages,
             'session_count': len(sessions),

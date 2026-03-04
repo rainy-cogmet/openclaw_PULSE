@@ -335,6 +335,13 @@ class FeatureExtractor:
         self.heartbeat = parsed_bundle.get('heartbeat', None)
         self.tools_config = parsed_bundle.get('tools_config', None)
         self.skills = parsed_bundle.get('skills', None)
+        # v3.2: cron 支持 — CronParser 对象 或 cron_jobs 列表
+        self.cron = parsed_bundle.get('cron', None)
+        if self.cron is None:
+            _cron_jobs = parsed_bundle.get('cron_jobs', None)
+            if _cron_jobs and isinstance(_cron_jobs, list):
+                from data_parser import CronParser
+                self.cron = CronParser(jobs=_cron_jobs)
         self.user_messages = parsed_bundle.get('user_messages', [])
         self.agent_messages = parsed_bundle.get('agent_messages', [])
         self.session_count = parsed_bundle.get('session_count', len(self.sessions))
@@ -598,6 +605,17 @@ class FeatureExtractor:
             f['heartbeat_activity_level'] = self.heartbeat.get_activity_level()
         else:
             f['heartbeat_activity_level'] = 0.0
+
+        # 补充: cron 任务主动度 — 直接输入 ECHO I 维
+        if self.cron and hasattr(self.cron, 'get_proactivity_score') and self.cron.has_cron():
+            f['cron_proactivity_score'] = self.cron.get_proactivity_score()
+            f['cron_job_count'] = self.cron.get_job_count()
+            f['cron_enabled_count'] = self.cron.get_enabled_count()
+            f['cron_recurring_ratio'] = self.cron.get_recurring_ratio()
+            f['cron_frequency_score'] = self.cron.get_frequency_score()
+            f['cron_isolated_ratio'] = self.cron.get_isolated_ratio()
+        else:
+            f['cron_proactivity_score'] = -1.0  # -1 表示缺失, 自动降级
 
         # 工具自主发起比例
         total_si = 0

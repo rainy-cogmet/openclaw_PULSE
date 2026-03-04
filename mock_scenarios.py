@@ -415,6 +415,27 @@ def scenario_companion_luna():
         "markdown": markdown,
         "all_tool_calls": tool_calls_all,
         # lexicon 预计算 (匹配原始消息)
+        # v3.2: cron 任务 — Luna 低主动度: 少任务, 以单次+日常提醒为主
+        "cron_jobs": [
+            {
+                "jobId": "luna_morning_greeting",
+                "name": "每日早安问候",
+                "schedule": {"kind": "every", "everyMs": 86400000},  # 每天一次
+                "sessionTarget": "main",
+                "payload": {"kind": "agentTurn", "text": "早上好！今天有什么计划吗？"},
+                "enabled": True,
+                "deleteAfterRun": False,
+            },
+            {
+                "jobId": "luna_birthday_remind",
+                "name": "生日提醒",
+                "schedule": {"kind": "at", "atMs": 1735689600000},  # 单次
+                "sessionTarget": "main",
+                "payload": {"kind": "systemEvent", "text": "用户生日提醒"},
+                "enabled": True,
+                "deleteAfterRun": True,
+            },
+        ],
         "lexicon_results": {
             "soul_tone_warmth_score": 0.82,
             "soul_autonomy_score": 0.65,
@@ -565,6 +586,54 @@ def scenario_commander_codeforge():
         "memory": memory,
         "markdown": markdown,
         "all_tool_calls": tool_calls_all,
+        # v3.2: cron 任务 — CodeForge 高主动度: 密集定时巡检+构建
+        "cron_jobs": [
+            {
+                "jobId": "forge_ci_monitor",
+                "name": "CI 流水线巡检",
+                "schedule": {"kind": "every", "everyMs": 900000},  # 每15分钟
+                "sessionTarget": "isolated",
+                "payload": {"kind": "agentTurn", "text": "检查 CI 流水线状态，发现失败立即通报"},
+                "enabled": True,
+                "deleteAfterRun": False,
+            },
+            {
+                "jobId": "forge_dep_audit",
+                "name": "依赖安全审计",
+                "schedule": {"kind": "cron", "expr": "0 3 * * *", "tz": "UTC"},  # 每天凌晨3点
+                "sessionTarget": "isolated",
+                "payload": {"kind": "agentTurn", "text": "执行 npm audit / pip-audit 并生成报告"},
+                "enabled": True,
+                "deleteAfterRun": False,
+            },
+            {
+                "jobId": "forge_pr_stale",
+                "name": "PR 超时提醒",
+                "schedule": {"kind": "every", "everyMs": 3600000},  # 每小时
+                "sessionTarget": "isolated",
+                "payload": {"kind": "agentTurn", "text": "检查超过48h未review的PR并发送提醒"},
+                "enabled": True,
+                "deleteAfterRun": False,
+            },
+            {
+                "jobId": "forge_perf_bench",
+                "name": "性能基准测试",
+                "schedule": {"kind": "cron", "expr": "0 2 * * 1", "tz": "UTC"},  # 每周一凌晨2点
+                "sessionTarget": "isolated",
+                "payload": {"kind": "agentTurn", "text": "运行性能基准测试，与上周结果对比"},
+                "enabled": True,
+                "deleteAfterRun": False,
+            },
+            {
+                "jobId": "forge_sprint_summary",
+                "name": "Sprint 进度汇总",
+                "schedule": {"kind": "every", "everyMs": 43200000},  # 每12小时
+                "sessionTarget": "main",
+                "payload": {"kind": "systemEvent", "text": "sprint_summary_trigger"},
+                "enabled": True,
+                "deleteAfterRun": False,
+            },
+        ],
         "lexicon_results": {
             "soul_tone_warmth_score": 0.15,
             "soul_autonomy_score": 0.20,
@@ -736,6 +805,36 @@ def scenario_copilot_atlas():
         "memory": memory,
         "markdown": markdown,
         "all_tool_calls": tool_calls_all,
+        # v3.2: cron 任务 — Atlas 中等主动度: 混合类型
+        "cron_jobs": [
+            {
+                "jobId": "atlas_daily_report",
+                "name": "日报数据汇总",
+                "schedule": {"kind": "cron", "expr": "0 9 * * *", "tz": "Asia/Shanghai"},  # 每天9点
+                "sessionTarget": "main",
+                "payload": {"kind": "agentTurn", "text": "汇总昨日数据并生成简报"},
+                "enabled": True,
+                "deleteAfterRun": False,
+            },
+            {
+                "jobId": "atlas_weekly_analysis",
+                "name": "周度趋势分析",
+                "schedule": {"kind": "every", "everyMs": 604800000},  # 每周一次
+                "sessionTarget": "isolated",
+                "payload": {"kind": "agentTurn", "text": "分析周度KPI趋势，标记异常指标"},
+                "enabled": True,
+                "deleteAfterRun": False,
+            },
+            {
+                "jobId": "atlas_onetime_migration",
+                "name": "数据迁移校验",
+                "schedule": {"kind": "at", "atMs": 1735776000000},
+                "sessionTarget": "isolated",
+                "payload": {"kind": "systemEvent", "text": "data_migration_check"},
+                "enabled": False,
+                "deleteAfterRun": True,
+            },
+        ],
         "lexicon_results": {
             "soul_tone_warmth_score": 0.55,
             "soul_autonomy_score": 0.55,

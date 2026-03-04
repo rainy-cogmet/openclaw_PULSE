@@ -115,42 +115,41 @@ def _compute_I(
     agent_messages: List[str],
     heartbeat_activity_level: float = -1.0,
     tool_self_initiated_ratio: float = -1.0,
+    cron_proactivity_score: float = -1.0,
 ) -> float:
     """Initiative dimension: Reactive (< 0.5) vs Proactive (>= 0.5).
 
-    v3 改进:
-      - soul_autonomy: 权重 0.30 (配置侧主动性)
-      - proactive_ratio: 权重 0.25 (行为侧: agent 消息中主动建议关键词)
-      - heartbeat_activity_level: 权重 0.25 (行为侧: heartbeat 使用活跃度)
-      - tool_self_initiated_ratio: 权重 0.20 (行为侧: 工具自主发起比例)
+    v3.2 改进: 新增 cron_proactivity_score (cron 定时任务主动度)
+      - soul_autonomy: 配置侧主动性
+      - proactive_ratio: 行为侧: agent 消息中主动建议关键词
+      - heartbeat_activity_level: 行为侧: heartbeat 使用活跃度
+      - tool_self_initiated_ratio: 行为侧: 工具自主发起比例
+      - cron_proactivity_score: 行为侧: cron 定时任务主动度 (任务数+频率+类型)
 
-    当 heartbeat / tool 数据缺失时 (传入 -1), 动态调整权重分配给其他维度。
+    权重分配策略: 动态加权, 缺失维度 (-1) 自动将权重分配给其他维度。
     """
     soul_autonomy = _lexicon_score(lexicon_results, SOUL_AUTONOMY_KEY, 0.45)  # 默认0.45: 稍偏Reactive
     proactive_ratio = _keyword_ratio(agent_messages, _PROACTIVE_KEYWORDS)
 
-    has_heartbeat = heartbeat_activity_level >= 0
-    has_tool_si = tool_self_initiated_ratio >= 0
+    # ── 动态加权: 收集所有可用信号, 按权重归一化 ──
+    # 基础信号 (始终存在)
+    signals = [
+        (soul_autonomy,    0.25),   # 配置侧主动性
+        (proactive_ratio,  0.20),   # 行为侧: 消息中主动建议关键词
+    ]
 
-    if has_heartbeat and has_tool_si:
-        # 完整数据: 四维加权
-        raw = (0.30 * soul_autonomy
-               + 0.25 * proactive_ratio
-               + 0.25 * heartbeat_activity_level
-               + 0.20 * tool_self_initiated_ratio)
-    elif has_heartbeat:
-        # 有 heartbeat 无 tool
-        raw = (0.35 * soul_autonomy
-               + 0.30 * proactive_ratio
-               + 0.35 * heartbeat_activity_level)
-    elif has_tool_si:
-        # 有 tool 无 heartbeat
-        raw = (0.35 * soul_autonomy
-               + 0.30 * proactive_ratio
-               + 0.35 * tool_self_initiated_ratio)
-    else:
-        # 都缺失: 仅 config + 行为关键词, 无硬编码基线
-        raw = 0.55 * soul_autonomy + 0.45 * proactive_ratio
+    # 可选行为信号 — 缺失时 (-1) 不参与, 权重自动重分配
+    if heartbeat_activity_level >= 0:
+        signals.append((heartbeat_activity_level, 0.20))  # heartbeat 活跃度
+    if tool_self_initiated_ratio >= 0:
+        signals.append((tool_self_initiated_ratio, 0.15))  # 工具自主发起
+    if cron_proactivity_score >= 0:
+        # cron 主动度: 任务数 + 频率 + agentTurn占比 的综合分
+        signals.append((cron_proactivity_score, 0.20))     # cron 定时任务主动度
+
+    # 归一化权重求和
+    total_w = sum(w for _, w in signals)
+    raw = sum(s * w for s, w in signals) / total_w
 
     return clamp(raw, 0.0, 1.0)
 
@@ -378,6 +377,7 @@ def classify(
     memory_date_span: int = -1,
     agent_self_update_count: int = -1,
     memory_search_count: int = -1,
+    cron_proactivity_score: float = -1.0,
 ) -> dict:
     """Classify the agent into one of 16 ECHO types.
 
@@ -386,7 +386,8 @@ def classify(
     """
     # --- compute four dimensions ---
     i_score = _compute_I(lexicon_results, agent_messages,
-                         heartbeat_activity_level, tool_self_initiated_ratio)
+                         heartbeat_activity_level, tool_self_initiated_ratio,
+                         cron_proactivity_score)
     s_score = _compute_S(lexicon_results,
                          installed_skills_count, topic_coverage_breadth,
                          cross_domain_task_ratio, tools_config_richness)
@@ -423,6 +424,7 @@ def classify(
         "agent_message_count": len(agent_messages),
         "heartbeat_activity_level": heartbeat_activity_level,
         "tool_self_initiated_ratio": tool_self_initiated_ratio,
+        "cron_proactivity_score": cron_proactivity_score,
         "installed_skills_count": installed_skills_count,
         "memory_depth": memory_depth,
     }
@@ -487,6 +489,8 @@ def compute_echo_profile(features: dict) -> dict:
         features.get("agent_self_update_count", -1))
     memory_search_count = int(
         features.get("memory_search_count", -1))
+    cron_proactivity_score = safe_float(
+        features.get("cron_proactivity_score"), -1.0)
 
     # --- build lexicon_results dict ---
     lexicon_results = {
@@ -500,7 +504,8 @@ def compute_echo_profile(features: dict) -> dict:
 
     # --- compute dimensions with behavior params ---
     i_score = _compute_I(lexicon_results, agent_messages,
-                         heartbeat_activity_level, tool_self_initiated_ratio)
+                         heartbeat_activity_level, tool_self_initiated_ratio,
+                         cron_proactivity_score)
     s_score = _compute_S(lexicon_results,
                          installed_skills_count, topic_coverage_breadth,
                          cross_domain_task_ratio, tools_config_richness)
