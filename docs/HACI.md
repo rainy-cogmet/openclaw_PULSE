@@ -7,7 +7,7 @@
 **在 AI 时代，先认识你自己。**
 **100 种 AI 工具不如 1 个对的搭档模式。**
 
-> **HACI（Human-AI Collaboration Index）** 是全球首个类 MBTI 的人机协作风格评测体系，通过 **人类侧 × Agent 侧 × 人机关系侧** 三大模块，为每位用户生成独一无二的 **人机协作风格画像**，帮助个人找到最佳 AI 搭档模式，帮助组织构建高效人机协同团队。
+> **PULSE**（**P**rofiling **U**ser-**L**M **S**ynergy & **E**ngagement）是全球首个类 MBTI 的人机协作风格评测体系，通过 **人类侧 × Agent 侧 × 人机关系侧** 三大模块，为每位用户生成独一无二的 **人机协作风格画像**，帮助个人找到最佳 AI 搭档模式，帮助组织构建高效人机协同团队。
 
 ## Part I · BOND Profile — 人类用户分类学—— "你是哪种协作者？"
 
@@ -170,3 +170,7 @@
 | P Precision | F (反馈粒度) | S (专精度) | 互补 + 清晰 | complement 0.7 / clarity 0.3 |
 | S Synergy | R + T + A + P | — | 加权合成 | 0.3R + 0.25T + 0.2A + 0.25P |
 
+---
+*Powered by OpenClaw PAULSE Spectrum v1.0*
+
+*理论基础: Dryer & Horowitz (1997), Edwards (1991/2008), Fiske (1992/2002), Furr (2008)*
