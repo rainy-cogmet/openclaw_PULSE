@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-PARTS Spectrum 匹配器 — 人机关系分类 (10 种类型)
+PULSE Spectrum 匹配器 — 人机关系分类 (10 种类型)
 
-根据 BOND Profile 和 ECHO Matrix 的分类结果，计算 PARTS 五维评分
+根据 BOND Profile 和 ECHO Matrix 的分类结果，计算 PULSE 五维评分
 （Resonance, Tempo, Agency Balance, Precision Mesh, Synergy Index），
 然后与 10 种理想关系类型做余弦相似度匹配。
 
@@ -22,7 +22,7 @@ except ImportError:
 
 
 # ===================================================================
-# 10 种关系类型的理想 PARTS 向量
+# 10 种关系类型的理想 PULSE 向量
 # ===================================================================
 # 每个类型对应 (R, T, A, P, S) 五维理想值，值域 [0, 1]
 
@@ -66,8 +66,8 @@ IDEAL_RTAPS = {
     },
 }
 
-# PARTS 维度全称（用于报告）
-PARTS_DIM_NAMES: Dict[str, str] = {
+# PULSE 维度全称（用于报告）
+PULSE_DIM_NAMES: Dict[str, str] = {
     "R": "Resonance (共振度)",
     "T": "Tempo (节奏度)",
     "A": "Agency Balance (主导权平衡)",
@@ -77,7 +77,7 @@ PARTS_DIM_NAMES: Dict[str, str] = {
 
 
 # ===================================================================
-# PARTS 五维评分计算
+# PULSE 五维评分计算
 # ===================================================================
 
 def _extract_bond_scores(bond_result: Dict) -> Dict[str, float]:
@@ -112,9 +112,9 @@ def _extract_echo_scores(echo_result: Dict) -> Dict[str, float]:
     }
 
 
-def compute_parts(bond_result: Dict, echo_result: Dict) -> Dict[str, float]:
+def compute_PULSE(bond_result: Dict, echo_result: Dict) -> Dict[str, float]:
     """
-    根据 BOND 和 ECHO 分类结果计算 PARTS 五维评分。
+    根据 BOND 和 ECHO 分类结果计算 PULSE 五维评分。
 
     BOND 维度 (值域 [0, 1]):
         T: 0=Sprint, 1=Marathon
@@ -203,7 +203,7 @@ def compute_parts(bond_result: Dict, echo_result: Dict) -> Dict[str, float]:
 def _cosine_similarity(vec_a: Dict[str, float],
                        vec_b: Dict[str, float]) -> float:
     """
-    计算两个 PARTS 向量之间的余弦相似度。
+    计算两个 PULSE 向量之间的余弦相似度。
 
     使用 math.sqrt，纯 stdlib 实现。
     """
@@ -337,7 +337,7 @@ def _build_type_info(code: str, similarity: float) -> Dict:
 
 def classify(bond_result: Dict, echo_result: Dict) -> Dict:
     """
-    PARTS Spectrum 完整分类流程。
+    PULSE Spectrum 完整分类流程。
 
     输入:
         bond_result: bond_classifier 的输出 dict
@@ -347,7 +347,7 @@ def classify(bond_result: Dict, echo_result: Dict) -> Dict:
 
     输出:
         {
-            "parts": {R, T, A, P, S} -> float,
+            "PULSE": {R, T, A, P, S} -> float,
             "primary": {
                 code, name, name_en, similarity,
                 description, quote, traits
@@ -356,11 +356,11 @@ def classify(bond_result: Dict, echo_result: Dict) -> Dict:
             "rankings": [(code, name, similarity), ...] top 5
         }
     """
-    # 1. 计算 PARTS 五维评分
-    parts = compute_parts(bond_result, echo_result)
+    # 1. 计算 PULSE 五维评分
+    PULSE = compute_PULSE(bond_result, echo_result)
 
     # 2. 余弦相似度排序
-    all_rankings = _rank_all_types(parts)
+    all_rankings = _rank_all_types(PULSE)
 
     # 3. 组装 primary
     primary_code, primary_sim = all_rankings[0]
@@ -380,7 +380,7 @@ def classify(bond_result: Dict, echo_result: Dict) -> Dict:
         top5.append((code, name, sim))
 
     return {
-        "parts": parts,
+        "PULSE": PULSE,
         "primary": primary,
         "secondary": secondary,
         "rankings": top5,
@@ -388,14 +388,14 @@ def classify(bond_result: Dict, echo_result: Dict) -> Dict:
 
 
 # ===================================================================
-# 兼容入口: run_parts_spectrum
+# 兼容入口: run_PULSE_spectrum
 # ===================================================================
-# 保持与 profiler.py 中 `from sync_matcher import run_parts_spectrum`
+# 保持与 profiler.py 中 `from sync_matcher import run_PULSE_spectrum`
 # 调用方式的兼容性。
 
-def run_parts_spectrum(bond_profile: Dict, echo_profile: Dict) -> Dict:
+def run_PULSE_spectrum(bond_profile: Dict, echo_profile: Dict) -> Dict:
     """
-    完整的 PARTS Spectrum 分析（兼容旧接口）。
+    完整的 PULSE Spectrum 分析（兼容旧接口）。
 
     参数:
         bond_profile: compute_bond_profile() 的返回值
@@ -412,7 +412,7 @@ def run_parts_spectrum(bond_profile: Dict, echo_profile: Dict) -> Dict:
     """
     result = classify(bond_profile, echo_profile)
 
-    parts = result["parts"]
+    PULSE = result["PULSE"]
 
     # 兼容旧接口字段
     primary = result["primary"]
@@ -454,12 +454,12 @@ def run_parts_spectrum(bond_profile: Dict, echo_profile: Dict) -> Dict:
         "P": "精度啮合",
     }
     for dim in ["R", "T", "A", "P"]:
-        val = parts[dim]
+        val = PULSE[dim]
         if val < 0.4:
             warnings.append(_generate_warning(dim, dim_labels[dim], val))
 
     return {
-        "parts": parts,
+        "PULSE": PULSE,
         "primary": result["primary"],
         "secondary": result["secondary"],
         "rankings": result["rankings"],
@@ -484,5 +484,5 @@ def _generate_warning(dim: str, label: str, value: float) -> str:
 
 
 # 向后兼容别名
-run_sync_spectrum = run_parts_spectrum
-compute_rtaps = compute_parts
+run_sync_spectrum = run_PULSE_spectrum
+compute_rtaps = compute_PULSE
