@@ -350,7 +350,8 @@ def load_from_dir(dirpath):
     data = {}
 
     for name, key in [('SOUL.md', 'soul_text'), ('soul.md', 'soul_text'),
-                       ('IDENTITY.md', 'identity_text'), ('identity.md', 'identity_text')]:
+                       ('IDENTITY.md', 'identity_text'), ('identity.md', 'identity_text'),
+                       ('MEMORY.md', 'memory_md'), ('memory.md', 'memory_md')]:
         fpath = os.path.join(dirpath, name)
         if os.path.isfile(fpath) and key not in data:
             with open(fpath, "r", encoding="utf-8") as f:
@@ -566,6 +567,10 @@ def main():
     parser.add_argument(
         "-o", "--outdir", default=".",
         help="输出目录 (默认: 当前目录)",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true",
+        help="显示详细输出",
     )
     parser.add_argument(
         "--no-charts", action="store_true",
