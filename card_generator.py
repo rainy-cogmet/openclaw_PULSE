@@ -495,7 +495,7 @@ def _render_echo_section(echo_result: Dict, local_image: Optional[str] = None) -
 def _render_sync_section(sync_result: Dict, local_image: Optional[str] = None) -> str:
     """渲染 PULSE Spectrum 区块。"""
     primary = sync_result.get("primary", sync_result.get("primary_type", {}))
-    PULSE = sync_result.get("PULSE", {})
+    PULSE = sync_result.get("PULSE", sync_result.get("parts", {}))
     warnings = sync_result.get("warnings", [])
 
     sync_name = primary.get("name", primary.get("name_zh", ""))
