@@ -635,6 +635,10 @@ def generate_markdown_report(
     )
     lines.append(">")
     lines.append("> *Powered by OpenClaw PARTS Spectrum v1.0*")
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+    lines.append("想查看更详细的解读和人格画像？看这里：https://github.com/rainy-cogmet/openclaw_PULSE/blob/main/docs/PULSE.md")
 
     return "\n".join(lines)
 
