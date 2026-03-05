@@ -486,3 +486,4 @@ def _generate_warning(dim: str, label: str, value: float) -> str:
 # 向后兼容别名
 run_sync_spectrum = run_PULSE_spectrum
 compute_rtaps = compute_PULSE
+run_parts_spectrum = run_PULSE_spectrum
