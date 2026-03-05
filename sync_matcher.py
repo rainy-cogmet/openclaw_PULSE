@@ -235,20 +235,52 @@ def _euclidean_similarity(vec_a: Dict[str, float], vec_b: Dict[str, float]) -> f
     return 1.0 / (1.0 + math.sqrt(sq_sum))
 
 
-def _rank_all_types(parts_scores: Dict[str, float]) -> List[Tuple[str, float]]:
+def _rank_all_types(rtaps: Dict[str, float]) -> List[Tuple[str, float]]:
     """
     对所有 10 种关系类型计算余弦相似度，按降序排列。
-
-    返回:
-        [(type_code, similarity), ...] 长度 10，从高到低排序
+    
+    新增：边界惩罚机制 - 给"全中等"的组合减分，鼓励更极端的匹配
     """
+    # 检测是否是"全中等"组合（所有维度都在 0.35-0.65 之间）
+    is_middle_zone = (
+        0.35 <= rtaps.get("R", 0.5) <= 0.65 and
+        0.35 <= rtaps.get("T", 0.5) <= 0.65 and
+        0.35 <= rtaps.get("A", 0.5) <= 0.65 and
+        0.35 <= rtaps.get("P", 0.5) <= 0.65 and
+        0.35 <= rtaps.get("S", 0.5) <= 0.65
+    )
+    
+    # 计算每个维度偏离中心的程度（用于动态惩罚）
+    middle_deviation = 0.0
+    for dim in ["R", "T", "A", "P", "S"]:
+        val = rtaps.get(dim, 0.5)
+        middle_deviation += abs(val - 0.5)
+    middle_deviation /= 5.0  # 平均偏离度 [0, 0.5]
+    
     rankings = []
-    for code, ideal_vec in IDEAL_PARTS.items():
-        cos_sim = _cosine_similarity(parts_scores, ideal_vec)
-        euc_sim = _euclidean_similarity(parts_scores, ideal_vec)
+    for code, ideal_vec in IDEAL_RTAPS.items():
+        cos_sim = _cosine_similarity(rtaps, ideal_vec)
+        euc_sim = _euclidean_similarity(rtaps, ideal_vec)
         # 混合评分: 余弦相似度(方向) + 欧氏相似度(绝对距离), 偏重欧氏
         hybrid = 0.4 * cos_sim + 0.6 * euc_sim
-        rankings.append((code, round(hybrid, 4)))
+        
+        # 边界惩罚：
+        # 1. 如果是"全中等"组合，给所有类型减 0.12
+        # 2. 但给"镜像对手"额外减 0.08（让它不容易成为默认）
+        # 3. 同时给"探险伙伴"和"联合驾驶"加 0.05（鼓励中等偏协作的组合）
+        penalty = 0.0
+        if is_middle_zone:
+            penalty = 0.12
+            if code == "Mirror Rival":
+                penalty += 0.08  # 镜像对手额外惩罚
+            if code in ["Expedition Partner", "Co-pilot"]:
+                penalty -= 0.05  # 协作型额外奖励
+        
+        # 动态惩罚：偏离中心越小，惩罚越大
+        dynamic_penalty = (0.5 - middle_deviation) * 0.08
+        
+        final_score = hybrid - penalty - dynamic_penalty
+        rankings.append((code, round(final_score, 4)))
 
     rankings.sort(key=lambda x: x[1], reverse=True)
     return rankings
